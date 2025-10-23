@@ -2,6 +2,7 @@ use std::{fmt::Debug, io, path::PathBuf};
 
 use regex::Regex;
 
+#[derive(Clone)]
 pub struct Shortcut {
     path: PathBuf,
     pub appid: u32,
@@ -9,7 +10,7 @@ pub struct Shortcut {
     pub icon: Icon,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Icon {
     pub path: Option<PathBuf>,
     pub hash: Option<String>,
@@ -29,16 +30,7 @@ impl Shortcut {
         }
     }
 
-    /// Returns the read of this [`Shortcut`].
-    ///
-    /// # Panics
-    ///
-    /// Panics if .
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if .
-    pub fn read(&mut self) -> Result<(), std::io::Error> {
+    pub fn read(&mut self) -> Result<Shortcut, std::io::Error> {
         if self.path.exists() == false {
             return Err(io::Error::new(io::ErrorKind::NotFound, "Game ID not found"));
         }
@@ -70,7 +62,15 @@ impl Shortcut {
             }
         }
 
-        Ok(())
+        Ok(self.clone())
+    }
+
+    pub fn icon_url(&self) -> String {
+        let appid = self.appid;
+        let hash = self.clone().icon.hash.unwrap();
+        format!(
+            "https://media.steampowered.com/steamcommunity/public/images/apps/{appid}/{hash}.ico"
+        )
     }
 }
 
