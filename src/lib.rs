@@ -3,6 +3,7 @@ pub fn add(left: u64, right: u64) -> u64 {
 }
 
 pub mod shortcut;
+pub mod system;
 
 #[cfg(test)]
 mod tests {
