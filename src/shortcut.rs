@@ -17,7 +17,7 @@ pub struct Icon {
 }
 
 impl Shortcut {
-    // create a new instance
+    /// Creates a new [`Shortcut`] using a PathBuf to a .url shortcut
     pub fn new(path: PathBuf) -> Self {
         Shortcut {
             path,
@@ -30,6 +30,11 @@ impl Shortcut {
         }
     }
 
+    /// Returns the read of this [`Shortcut`].
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if the file is not a valid Steam Shortcut
     pub fn read(&mut self) -> Result<Shortcut, std::io::Error> {
         if self.path.exists() == false {
             return Err(io::Error::new(io::ErrorKind::NotFound, "Game ID not found"));
@@ -65,6 +70,11 @@ impl Shortcut {
         Ok(self.clone())
     }
 
+    /// Returns the icon url of this [`Shortcut`] used for download.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there no icon hash
     pub fn icon_url(&self) -> String {
         let appid = self.appid;
         let hash = self.clone().icon.hash.unwrap();

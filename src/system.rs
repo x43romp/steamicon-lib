@@ -1,5 +1,10 @@
 use std::io;
 
+/// Gets the directory path to steam
+///
+/// # Errors
+/// 
+/// This function errors if there is no SteamPath in the Windows Registry
 #[cfg(target_os = "windows")]
 pub fn steam_path() -> Result<std::path::PathBuf, io::Error> {
     let steam_path = windows_registry::CURRENT_USER
@@ -15,6 +20,11 @@ pub fn steam_path() -> Result<std::path::PathBuf, io::Error> {
     Ok(std::path::PathBuf::default())
 }
 
+/// Expands variables for Windows paths
+///
+/// # Panics
+///
+/// Panics if a env variable is used but cannot be found
 #[cfg(target_os = "windows")]
 pub fn expand_win_vars(s: &str) -> String {
     let re = regex::Regex::new(r"^\%([^\/]+)\%").unwrap();
@@ -24,6 +34,11 @@ pub fn expand_win_vars(s: &str) -> String {
     .into_owned()
 }
 
+/// Gets the current user's desktop path
+///
+/// # Errors
+///
+/// Errors if it cannot find Desktop in the User Shell Folders
 #[cfg(target_os = "windows")]
 pub fn desktop_path() -> Result<std::path::PathBuf, io::Error> {
     let mut path = windows_registry::CURRENT_USER
