@@ -3,7 +3,7 @@ use std::io;
 /// Gets the directory path to steam
 ///
 /// # Errors
-/// 
+///
 /// This function errors if there is no SteamPath in the Windows Registry
 #[cfg(target_os = "windows")]
 pub fn steam_path() -> Result<std::path::PathBuf, io::Error> {
@@ -58,6 +58,33 @@ pub fn desktop_path() -> Result<std::path::PathBuf, io::Error> {
     Ok(std::path::PathBuf::default())
 }
 
+/// Gets the current user's menu path
+///
+/// # Errors
+///
+/// It cannot find the desktop in the User Shell Folders
+#[cfg(target_os = "windows")]
+pub fn menu_path() -> Result<std::path::PathBuf, io::Error> {
+    let mut path = windows_registry::CURRENT_USER
+        .open(r"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\User Shell Folders")?
+        .get_string("Programs")?;
+
+    if path.contains("%") {
+        path = expand_win_vars(&path);
+    }
+
+    let mut buffer = std::path::PathBuf::from(path);
+    buffer.push("Steam");
+
+    Ok(buffer)
+}
+
+#[cfg(target_os = "macos")]
+#[cfg(target_os = "linux")]
+pub fn menu_path() -> Result<std::path::PathBuf, io::Error> {
+    Ok(std::path::PathBuf::default())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -92,6 +119,23 @@ mod tests {
     #[cfg(target_os = "linux")]
     fn test_desktop_path() {
         let path = desktop_path().unwrap();
+        assert_eq!(path, std::path::PathBuf::default());
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn test_menu_path() {
+        let binding = menu_path().unwrap();
+        let path = binding.to_str().unwrap();
+        assert!(path.contains("Start Menu"));
+        assert!(path.contains("Steam"));
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    #[cfg(target_os = "linux")]
+    fn test_menu_path() {
+        let path = menu_path().unwrap();
         assert_eq!(path, std::path::PathBuf::default());
     }
 }
